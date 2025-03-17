@@ -7,13 +7,12 @@ public struct Version has key {
 
 const EInvalidPackageVersion: u64 = 0;
 
-// DEMO: Bump version.
-// DEMO: Change constant values.
-const VERSION: u64 = 1;
+const VERSION: u64 = 2;
 
 public fun check_is_valid(self: &Version) {
     assert!(self.version == VERSION, EInvalidPackageVersion);
 }
 
-// DEMO: Migrate Version object.
-// DEMO: Add new function.
+public fun migrate(self: &mut Version) {
+    self.version = VERSION;
+}
