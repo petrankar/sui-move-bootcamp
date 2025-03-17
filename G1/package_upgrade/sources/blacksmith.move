@@ -5,6 +5,7 @@ use package_upgrade::admin::AdminCap;
 // DEMO: Change constant name, add constant.
 const ENotEnoughExpertise: u64 = 0;
 
+/// Blacksmith; can create items.
 public struct Blacksmith has key, store {
     id: UID,
     expertise: u64

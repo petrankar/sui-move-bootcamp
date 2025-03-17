@@ -35,10 +35,13 @@ fun init(otw: HERO, ctx: &mut TxContext) {
     package::claim_and_keep(otw, ctx);
 }
 
+/// @deprecated: `mint_hero` is deprecated. Use `mint_hero_v2` instead.
 public fun mint_hero(_: &Version, _: &mut TxContext): Hero {
     abort(EUseMintHeroV2Instead)
 }
 
+/// Anyone can mint a hero, as long as they pay `HERO_PRICE` SUI.
+/// New hero will have 100 health and 10 stamina.
 public fun mint_hero_v2(version: &Version, payment: Coin<SUI>, ctx: &mut TxContext): Hero {
     version.check_is_valid();
     assert!(payment.value() == HERO_PRICE, EInvalidPaymentBalance);
@@ -50,7 +53,9 @@ public fun mint_hero_v2(version: &Version, payment: Coin<SUI>, ctx: &mut TxConte
     }
 }
 
-public fun add_sword(self: &mut Hero, version: &Version, sword: Sword) {
+/// Hero can equip a single sword.
+/// Equiping a sword increases the `Hero`'s power by its attack.
+public fun equip_sword(self: &mut Hero, version: &Version, sword: Sword) {
     version.check_is_valid();
     if (df::exists_(&self.id, ShieldKey())) {
         abort(EAlreadyEquipedSword)
@@ -59,6 +64,8 @@ public fun add_sword(self: &mut Hero, version: &Version, sword: Sword) {
     self.add_dof(SwordKey(), sword)
 }
 
+/// Hero can equip a single shield.
+/// Equiping a shield increases the `Hero`'s power by its defence.
 public fun equip_shield(self: &mut Hero, version: &Version, shield: Shield) {
     version.check_is_valid();
     if (df::exists_(&self.id, ShieldKey())) {
@@ -68,6 +75,8 @@ public fun equip_shield(self: &mut Hero, version: &Version, shield: Shield) {
     self.add_dof(ShieldKey(), shield)
 }
 
+/// Increases the power of a hero by value. If no `PowerKey` field exists under
+/// the hero, it creates it.
 fun increase_power(self: &mut Hero, value: u64) {
     if (!df::exists_(&self.id, PowerKey())) {
         df::add(&mut self.id, PowerKey(), 0);
@@ -84,6 +93,7 @@ public fun stamina(self: &Hero): u64 {
     self.stamina
 }
 
+/// Generic add dynamic object field to the hero.
 fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, value: T) {
     dof::add(&mut self.id, key_, value)
 }
