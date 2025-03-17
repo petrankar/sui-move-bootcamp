@@ -20,25 +20,23 @@ public struct Shield has key, store {
     defence: u64,
 }
 
+/// Admin can create new Blacksmiths.
 public fun new_blacksmith(_: &AdminCap, expertise: u64, ctx: &mut TxContext): Blacksmith {
     Blacksmith { id: object::new(ctx), expertise } 
 }
 
-/// Blacksmith can only create swords with attack no more than 10% of their
-/// expertise
-/// In the new version they will be able to create up to 20% of their expertise
+/// Blacksmith can create swords with attack no more than their expertise.
 public fun new_sword(self: &Blacksmith, attack: u64, ctx: &mut TxContext): Sword {
-    assert!(self.expertise >= 10 * attack, ENotEnoughExpertise) ;
+    assert!(self.expertise >= attack, ENotEnoughExpertise) ;
     Sword {
         id: object::new(ctx),
         attack
     }
 }
 
-/// Blacksmith can create shields with defence no more than 10% of their
-/// expertise
+/// Blacksmith can create shields with defence no more than their expertise.
 public fun new_shield(self: &Blacksmith, defence: u64, ctx: &mut TxContext): Shield {
-    assert!(self.expertise >= 10 * defence, ENotEnoughExpertise);
+    assert!(self.expertise >= defence, ENotEnoughExpertise);
     Shield {
         id: object::new(ctx),
         defence
