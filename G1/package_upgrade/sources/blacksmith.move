@@ -1,0 +1,46 @@
+module package_upgrade::blacksmith;
+
+use package_upgrade::admin::AdminCap;
+
+// DEMO: Change constant name, add constant.
+const ENotEnoughExpertise: u64 = 0;
+
+public struct Blacksmith has key, store {
+    id: UID,
+    expertise: u64
+}
+
+public struct Sword has key, store {
+    id: UID,
+    attack: u64,
+}
+
+public struct Shield has key, store {
+    id: UID,
+    defence: u64,
+}
+
+public fun new_blacksmith(_: &AdminCap, expertise: u64, ctx: &mut TxContext): Blacksmith {
+    Blacksmith { id: object::new(ctx), expertise } 
+}
+
+/// Blacksmith can only create swords with attack no more than 10% of their
+/// expertise
+/// In the new version they will be able to create up to 20% of their expertise
+public fun new_sword(self: &Blacksmith, attack: u64, ctx: &mut TxContext): Sword {
+    assert!(self.expertise >= 10 * attack, ENotEnoughExpertise) ;
+    Sword {
+        id: object::new(ctx),
+        attack
+    }
+}
+
+/// Blacksmith can create shields with defence no more than 10% of their
+/// expertise
+public fun new_shield(self: &Blacksmith, defence: u64, ctx: &mut TxContext): Shield {
+    assert!(self.expertise >= 10 * defence, ENotEnoughExpertise);
+    Shield {
+        id: object::new(ctx),
+        defence
+    }
+}
