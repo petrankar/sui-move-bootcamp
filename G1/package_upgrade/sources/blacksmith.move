@@ -34,6 +34,10 @@ public fun new_sword(self: &Blacksmith, attack: u64, ctx: &mut TxContext): Sword
     }
 }
 
+public fun attack(self: &Sword): u64 {
+    self.attack
+}
+
 /// Blacksmith can create shields with defence no more than their expertise.
 public fun new_shield(self: &Blacksmith, defence: u64, ctx: &mut TxContext): Shield {
     assert!(self.expertise >= defence, ENotEnoughExpertise);
@@ -42,3 +46,8 @@ public fun new_shield(self: &Blacksmith, defence: u64, ctx: &mut TxContext): Shi
         defence
     }
 }
+
+public fun defence(self: &Shield): u64 {
+    self.defence
+}
+

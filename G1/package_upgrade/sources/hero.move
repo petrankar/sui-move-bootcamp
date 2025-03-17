@@ -1,25 +1,28 @@
 module package_upgrade::hero;
 
+use sui::dynamic_field as df;
 use sui::dynamic_object_field as dof;
 use sui::package;
 
 use package_upgrade::blacksmith::{Shield, Sword};
-use package_upgrade::knowledge_tome::KnowledgeTome;
 use package_upgrade::version::Version;
+
+const EAlreadyEquipedShield: u64 = 0;
+const EAlreadyEquipedSword: u64 = 1;
 
 public struct HERO() has drop;
 
 /// Hero NFT
 public struct Hero has key, store {
     id: UID,
-    level: u64,
     health: u64,
     stamina: u64,
-    power: u64,
 }
 
 public struct SwordKey() has copy, drop, store;
 public struct ShieldKey() has copy, drop, store;
+
+public struct PowerKey() has copy, drop, store;
 
 fun init(otw: HERO, ctx: &mut TxContext) {
     package::claim_and_keep(otw, ctx);
@@ -33,32 +36,38 @@ public fun mint_hero(version: &Version, ctx: &mut TxContext): Hero {
     version.check_is_valid();
     Hero {
         id: object::new(ctx),
-        level: 1,
         health: 100,
         stamina: 10,
-        power: 10,
     }
 }
 
 public fun add_sword(self: &mut Hero, version: &Version, sword: Sword) {
     version.check_is_valid();
+    if (df::exists_(&self.id, ShieldKey())) {
+        abort(EAlreadyEquipedSword)
+    };
+    self.increase_power(sword.attack());
     self.add_dof(SwordKey(), sword)
 }
 
-public fun add_shield(self: &mut Hero, version: &Version, shield: Shield) {
+public fun equip_shield(self: &mut Hero, version: &Version, shield: Shield) {
     version.check_is_valid();
+    if (df::exists_(&self.id, ShieldKey())) {
+        abort(EAlreadyEquipedShield)
+    };
+    self.increase_power(shield.defence());
     self.add_dof(ShieldKey(), shield)
+}
+
+fun increase_power(self: &mut Hero, value: u64) {
+    if (!df::exists_(&self.id, PowerKey())) {
+        df::add(&mut self.id, PowerKey(), 0);
+    };
+    let power = df::borrow_mut(&mut self.id, PowerKey());
+    *power = *power + value;
 }
 
 fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, value: T) {
     dof::add(&mut self.id, key_, value)
 }
 
-// DEMO: Change function implementation.
-/// Each tome brings one level to the hero.
-/// We want tomes to add a dynamic number of levels to the hero.
-public fun level_up(self: &mut Hero, version: &Version, tome: KnowledgeTome) {
-    version.check_is_valid();
-    tome.delete();
-    self.level = self.level + 1;
-}
