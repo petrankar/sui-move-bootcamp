@@ -67,6 +67,14 @@ fun increase_power(self: &mut Hero, value: u64) {
     *power = *power + value;
 }
 
+public fun health(self: &Hero): u64 {
+    self.health
+}
+
+public fun stamina(self: &Hero): u64 {
+    self.stamina
+}
+
 fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, value: T) {
     dof::add(&mut self.id, key_, value)
 }
