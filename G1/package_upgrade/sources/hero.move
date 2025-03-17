@@ -12,10 +12,9 @@ use package_upgrade::version::Version;
 const PAYMENT_ADDRESS: address = @0x1111;
 const HERO_PRICE: u64 = 5_000_000_000;
 
-const EAlreadyEquipedShield: u64 = 0;
-const EAlreadyEquipedSword: u64 = 1;
-const EInvalidPaymentBalance: u64 = 2;
-const EUseMintHeroV2Instead: u64 = 3;
+const EAlreadyEquiped: u64 = 0;
+const EInvalidPaymentBalance: u64 = 1;
+const EUseMintHeroV2Instead: u64 = 2;
 
 public struct HERO() has drop;
 
@@ -57,9 +56,6 @@ public fun mint_hero_v2(version: &Version, payment: Coin<SUI>, ctx: &mut TxConte
 /// Equiping a sword increases the `Hero`'s power by its attack.
 public fun equip_sword(self: &mut Hero, version: &Version, sword: Sword) {
     version.check_is_valid();
-    if (df::exists_(&self.id, ShieldKey())) {
-        abort(EAlreadyEquipedSword)
-    };
     self.increase_power(sword.attack());
     self.add_dof(SwordKey(), sword)
 }
@@ -68,11 +64,16 @@ public fun equip_sword(self: &mut Hero, version: &Version, sword: Sword) {
 /// Equiping a shield increases the `Hero`'s power by its defence.
 public fun equip_shield(self: &mut Hero, version: &Version, shield: Shield) {
     version.check_is_valid();
-    if (df::exists_(&self.id, ShieldKey())) {
-        abort(EAlreadyEquipedShield)
-    };
     self.increase_power(shield.defence());
     self.add_dof(ShieldKey(), shield)
+}
+
+public fun health(self: &Hero): u64 {
+    self.health
+}
+
+public fun stamina(self: &Hero): u64 {
+    self.stamina
 }
 
 /// Increases the power of a hero by value. If no `PowerKey` field exists under
@@ -85,16 +86,11 @@ fun increase_power(self: &mut Hero, value: u64) {
     *power = *power + value;
 }
 
-public fun health(self: &Hero): u64 {
-    self.health
-}
-
-public fun stamina(self: &Hero): u64 {
-    self.stamina
-}
-
 /// Generic add dynamic object field to the hero.
 fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, value: T) {
+    if (df::exists_(&self.id, key_)) {
+        abort(EAlreadyEquiped)
+    };
     dof::add(&mut self.id, key_, value)
 }
 
