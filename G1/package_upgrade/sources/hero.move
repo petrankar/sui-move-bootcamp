@@ -1,7 +1,5 @@
 module package_upgrade::hero;
 
-use std::string::String;
-
 use sui::dynamic_object_field as dof;
 use sui::package;
 
@@ -20,7 +18,8 @@ public struct Hero has key, store {
     power: u64,
 }
 
-// DEMO: Add new structs (for DF-keys)
+public struct SwordKey() has copy, drop, store;
+public struct ShieldKey() has copy, drop, store;
 
 fun init(otw: HERO, ctx: &mut TxContext) {
     package::claim_and_keep(otw, ctx);
@@ -41,22 +40,18 @@ public fun mint_hero(version: &Version, ctx: &mut TxContext): Hero {
     }
 }
 
-// DEMO: Change implementation of public function without changing signature.
 public fun add_sword(self: &mut Hero, version: &Version, sword: Sword) {
     version.check_is_valid();
-    self.add_dof(b"Sword".to_string(), sword)
+    self.add_dof(SwordKey(), sword)
 }
 
-// DEMO: Change implementation of public function without changing signature.
 public fun add_shield(self: &mut Hero, version: &Version, shield: Shield) {
     version.check_is_valid();
-    self.add_dof(b"Shield".to_string(), shield)
+    self.add_dof(ShieldKey(), shield)
 }
 
-// DEMO: Change function signature and implementation of private function all
-// together.
-fun add_dof<T: key + store>(self: &mut Hero, name: String, value: T) {
-    dof::add(&mut self.id, name, value)
+fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, value: T) {
+    dof::add(&mut self.id, key_, value)
 }
 
 // DEMO: Change function implementation.
