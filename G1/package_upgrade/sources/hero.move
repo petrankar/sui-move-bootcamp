@@ -1,14 +1,21 @@
 module package_upgrade::hero;
 
+use sui::coin::Coin;
 use sui::dynamic_field as df;
 use sui::dynamic_object_field as dof;
 use sui::package;
+use sui::sui::SUI;
 
 use package_upgrade::blacksmith::{Shield, Sword};
 use package_upgrade::version::Version;
 
+const PAYMENT_ADDRESS: address = @0x1111;
+const HERO_PRICE: u64 = 5_000_000_000;
+
 const EAlreadyEquipedShield: u64 = 0;
 const EAlreadyEquipedSword: u64 = 1;
+const EInvalidPaymentBalance: u64 = 2;
+const EUseMintHeroV2Instead: u64 = 3;
 
 public struct HERO() has drop;
 
@@ -28,16 +35,18 @@ fun init(otw: HERO, ctx: &mut TxContext) {
     package::claim_and_keep(otw, ctx);
 }
 
-// DEMO: Invalidate function.
-// DEMO: Existing public function signatures cannot change.
-/// Lvl-1 Hero is freely mintable.
-/// We want to require a payment of 5 SUI in the next version.
-public fun mint_hero(version: &Version, ctx: &mut TxContext): Hero {
+public fun mint_hero(_: &Version, _: &mut TxContext): Hero {
+    abort(EUseMintHeroV2Instead)
+}
+
+public fun mint_hero_v2(version: &Version, payment: Coin<SUI>, ctx: &mut TxContext): Hero {
     version.check_is_valid();
+    assert!(payment.value() == HERO_PRICE, EInvalidPaymentBalance);
+    transfer::public_transfer(payment, PAYMENT_ADDRESS);
     Hero {
         id: object::new(ctx),
         health: 100,
-        stamina: 10,
+        stamina: 10
     }
 }
 
