@@ -1,7 +1,7 @@
 module basic_move::basic_move;
 
 use std::string::String;
-
+use sui::test_scenario;
 //Errors
 const EAlreadyCarryingWeapon: u64 = 1;
 
@@ -46,6 +46,25 @@ public fun create_weapon(
         destruction_power: destruction_power_param,
     };
     aWeapon
+}
+
+public fun mint_hero_with_weapon(hero_name: String, weapon_name: String, destruction_power : u64 , ctx: &mut TxContext): Hero {
+
+    let aWeapon = Weapon {
+        id: object::new(ctx),
+        name: weapon_name,
+        destruction_power,
+    };
+
+    let aHero = Hero {
+        id: object::new(ctx),
+        name: hero_name,
+        //adding initial weapon
+        weapon: option::some(aWeapon),
+        stamina: option::none(),
+        category: option::none(),
+    };
+    aHero
 }
 
 public fun equip_hero(hero: &mut Hero, weapon: Weapon) {
