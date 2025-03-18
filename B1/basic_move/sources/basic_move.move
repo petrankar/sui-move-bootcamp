@@ -51,7 +51,7 @@ public fun create_weapon(
     aWeapon
 }
 
-public fun mint_hero_with_weapon(hero_name: String, weapon_name: String, destruction_power : u64 , ctx: &mut TxContext): Hero {
+public fun mint_hero_with_weapon_and_keep(hero_name: String, weapon_name: String, destruction_power : u64 , ctx: &mut TxContext) {
 
     let aWeapon = Weapon {
         id: object::new(ctx),
@@ -67,7 +67,7 @@ public fun mint_hero_with_weapon(hero_name: String, weapon_name: String, destruc
         stamina: option::none(),
         category: option::none(),
     };
-    aHero
+    transfer::transfer(aHero, ctx.sender())
 }
 
 public fun equip_hero(hero: &mut Hero, weapon: Weapon) {
