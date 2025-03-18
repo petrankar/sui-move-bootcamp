@@ -14,7 +14,8 @@ const HERO_PRICE: u64 = 5_000_000_000;
 
 const EAlreadyEquiped: u64 = 0;
 const EInvalidPaymentBalance: u64 = 1;
-const EUseMintHeroV2Instead: u64 = 2;
+const EMigrateHeroFirst: u64 = 2;
+const EUseMintHeroV2Instead: u64 = 3;
 
 public struct HERO() has drop;
 
@@ -57,6 +58,7 @@ public fun mint_hero_v2(version: &Version, payment: Coin<SUI>, ctx: &mut TxConte
 public fun equip_sword(self: &mut Hero, version: &Version, sword: Sword) {
     version.check_is_valid();
     self.increase_power(sword.attack());
+    assert!(!dof::exists_(&self.id, b"sword".to_string()), EMigrateHeroFirst);
     self.add_dof(SwordKey(), sword)
 }
 
@@ -65,6 +67,7 @@ public fun equip_sword(self: &mut Hero, version: &Version, sword: Sword) {
 public fun equip_shield(self: &mut Hero, version: &Version, shield: Shield) {
     version.check_is_valid();
     self.increase_power(shield.defence());
+    assert!(!dof::exists_(&self.id, b"shield".to_string()), EMigrateHeroFirst);
     self.add_dof(ShieldKey(), shield)
 }
 
@@ -74,6 +77,37 @@ public fun health(self: &Hero): u64 {
 
 public fun stamina(self: &Hero): u64 {
     self.stamina
+}
+
+/// Returns the sword the hero has equipped.
+/// Aborts if it does not exists
+public fun sword(self: &Hero): &Sword {
+    dof::borrow(&self.id, SwordKey())
+}
+
+/// Returns the shield the hero has equipped.
+/// Aborts if it does not exists
+public fun shield(self: &Hero): &Shield {
+    dof::borrow(&self.id, ShieldKey())
+}
+
+public fun power(self: &Hero): u64 {
+    if (df::exists_(&self.id, PowerKey())) {
+        *df::borrow(&self.id, PowerKey())
+    } else {
+        0
+    }
+}
+
+public fun migrate(self: &mut Hero) {
+    if (dof::exists_(&self.id, b"sword")) {
+        let sword: Sword = dof::remove(&mut self.id, b"sword");
+        dof::add(&mut self.id, SwordKey(), sword);
+    };
+    if (dof::exists_(&self.id, b"shield")) {
+        let shield: Shield = dof::remove(&mut self.id, b"shield");
+        dof::add(&mut self.id, ShieldKey(), shield);
+    };
 }
 
 /// Increases the power of a hero by value. If no `PowerKey` field exists under
@@ -92,5 +126,15 @@ fun add_dof<K: copy + drop + store, T: key + store>(self: &mut Hero, key_: K, va
         abort(EAlreadyEquiped)
     };
     dof::add(&mut self.id, key_, value)
+}
+
+#[test_only]
+public fun init_for_testing(ctx: &mut TxContext) {
+    init(HERO(), ctx);
+}
+
+#[test_only]
+public fun uid_mut_for_testing(self: &mut Hero): &mut UID {
+    &mut self.id
 }
 

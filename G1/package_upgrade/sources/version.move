@@ -25,3 +25,8 @@ public fun check_is_valid(self: &Version) {
 public fun migrate(self: &mut Version) {
     self.version = VERSION;
 }
+
+#[test_only]
+public fun init_for_testing(ctx: &mut TxContext) {
+    init(ctx);
+}

@@ -1,6 +1,6 @@
 module package_upgrade::blacksmith;
 
-use package_upgrade::admin::AdminCap;
+use sui::package::Publisher;
 
 // DEMO: Change constant name, add constant.
 const ENotEnoughExpertise: u64 = 0;
@@ -22,7 +22,8 @@ public struct Shield has key, store {
 }
 
 /// Admin can create new Blacksmiths.
-public fun new_blacksmith(_: &AdminCap, expertise: u64, ctx: &mut TxContext): Blacksmith {
+public fun new_blacksmith(publisher: &Publisher, expertise: u64, ctx: &mut TxContext): Blacksmith {
+    assert!(publisher.from_package<Blacksmith>());
     Blacksmith { id: object::new(ctx), expertise } 
 }
 
