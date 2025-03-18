@@ -1,7 +1,10 @@
 module basic_move::basic_move;
 
 use std::string::String;
+
+#[test_only]
 use sui::test_scenario;
+
 //Errors
 const EAlreadyCarryingWeapon: u64 = 1;
 
