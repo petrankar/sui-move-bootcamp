@@ -45,6 +45,7 @@ public fun level_up(self: &mut Hero, tome: XPTome) {
 
 #[test]
 fun test_mint() {
+    use sui::test_utils;
     use scenario::acl;
 
     let admin = @0x11111;
@@ -54,7 +55,7 @@ fun test_mint() {
 
     let admins = acl::new_admins_for_testing(admin);
     mint(&admins, health, stamina, hero_owner, &mut tx_context::new_from_hint(admin, 0, 0, 0, 0));
-    admins.destroy_for_testing();
+    test_utils::destroy(admins);
 }
 
 #[test]
