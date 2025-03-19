@@ -12,8 +12,7 @@ public struct Hero has key {
     stamina: u64,
 }
 
-/// Anyone can mint a hero.
-/// Hero starts with 100 heath and 10 stamina.
+/// Admins can mint a hero.
 public fun mint(
     admins: &Admins,
     health: u64,
@@ -37,6 +36,7 @@ public fun stamina(self: &Hero): u64 {
     self.stamina
 }
 
+/// `Hero` can increase its stats by using an `XPTome`.
 public fun level_up(self: &mut Hero, tome: XPTome) {
     let (health, stamina) = tome.destroy();
     self.health = self.health + health;

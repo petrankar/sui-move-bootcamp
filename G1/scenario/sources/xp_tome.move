@@ -2,13 +2,15 @@ module scenario::xp_tome;
 
 use scenario::acl::Admins;
 
+/// XPTome is used to level-up a Hero.
 public struct XPTome has key {
     id: UID,
+    /// Health to be added to the `Hero`'s health.
     health: u64,
+    /// Stamina to be added to the `Hero`'s health.
     stamina: u64
 }
 
-// Note to self: Maybe add ID for usage?
 public fun new(
     admins: &Admins,
     health: u64,
