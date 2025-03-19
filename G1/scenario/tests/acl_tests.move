@@ -10,9 +10,8 @@ fun test_add_admin() {
     let initial_admin = @0x11111;
     let new_admin = @0x22222;
 
-    let mut scenario = test_scenario::begin(initial_admin);
-
     // Initialize package
+    let mut scenario = test_scenario::begin(initial_admin);
     acl::init_for_testing(scenario.ctx());
 
     let begin_effects = scenario.next_tx(initial_admin);
@@ -22,6 +21,7 @@ fun test_add_admin() {
     assert!(created.length() == 3);
     assert!(shared.length() == 1);
     assert!(transferred.size() == 2);
+
     // Add admin `new_admin`
     {
         let admin_cap = scenario.take_from_sender<AdminCap>();

@@ -34,6 +34,7 @@ fun test_new_xp_tome() {
         assert!(tome.stamina() == stamina);
         scenario.return_to_sender(tome);
     };
+
     scenario.end();
 }
 
