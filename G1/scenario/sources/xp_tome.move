@@ -40,3 +40,25 @@ public(package) fun destroy(self: XPTome): (u64, u64) {
     (health, stamina)
 }
 
+#[test_only]
+public fun new_for_testing(health: u64, stamina: u64): XPTome {
+    XPTome {
+        id: object::new(&mut tx_context::dummy()),
+        health,
+        stamina
+    }
+}
+
+#[test]
+fun test_new() {
+    use scenario::acl;
+    let admin = @0x11111;
+    let hero_owner = @0x22222;
+    let health = 20;
+    let stamina = 5;
+    let admins = acl::new_admins_for_testing(admin);
+
+    new(&admins, health, stamina, hero_owner, &mut tx_context::new_from_hint(admin, 0, 0, 0, 0));
+
+    admins.destroy_for_testing();
+}

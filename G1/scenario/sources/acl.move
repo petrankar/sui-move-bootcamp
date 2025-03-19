@@ -44,6 +44,41 @@ public(package) fun authorize(self: &Admins, ctx: &TxContext) {
     assert!(self.inner.contains(&ctx.sender()), ENotAuthorized);
 }
 
+#[test]
+fun test_add_admin() {
+    let new_admin = @0x22222;
+    let mut ctx = tx_context::dummy();
+
+    let cap = AdminCap { id: object::new(&mut ctx) };
+    let mut admins = Admins {
+        id: object::new(&mut ctx),
+        inner: vec_set::empty()
+    };
+
+    admins.add_admin(&cap, new_admin);
+
+    let Admins { id, inner } = admins;
+    assert!(inner.contains(&new_admin));
+    id.delete();
+
+    let AdminCap { id } = cap;
+    id.delete();
+}
+
+#[test_only]
+public fun new_admins_for_testing(admin: address): Admins {
+    Admins {
+        id: object::new(&mut tx_context::dummy()),
+        inner: vec_set::singleton(admin)
+    }
+}
+
+#[test_only]
+public fun destroy_for_testing(admins: Admins) {
+    let Admins { id, inner: _ } = admins;
+    id.delete();
+}
+
 #[test_only]
 public fun init_for_testing(ctx: &mut TxContext) {
     init(ACL(), ctx);
