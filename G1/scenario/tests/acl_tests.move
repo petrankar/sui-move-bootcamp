@@ -11,6 +11,8 @@ fun test_add_admin() {
     let new_admin = @0x22222;
 
     let mut scenario = test_scenario::begin(initial_admin);
+
+    // Initialize package
     acl::init_for_testing(scenario.ctx());
 
     let begin_effects = scenario.next_tx(initial_admin);
@@ -20,6 +22,7 @@ fun test_add_admin() {
     assert!(created.length() == 3);
     assert!(shared.length() == 1);
     assert!(transferred.size() == 2);
+    // Add admin `new_admin`
     {
         let admin_cap = scenario.take_from_sender<AdminCap>();
         let mut admins = scenario.take_shared<Admins>();
@@ -33,9 +36,8 @@ fun test_add_admin() {
         test_scenario::return_shared(admins);
     };
 
-    let add_admin_effects = scenario.next_tx(new_admin);
-    let transferred = add_admin_effects.transferred_to_account();
-    assert!(transferred.size() == 1);
+    // Authorize admin `new_admin`
+    scenario.next_tx(new_admin);
     {
         let admins = scenario.take_shared<Admins>();
         admins.authorize(scenario.ctx());

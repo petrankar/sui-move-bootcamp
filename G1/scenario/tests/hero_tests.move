@@ -14,9 +14,11 @@ fun test_mint() {
     let health = 100;
     let stamina = 10;
 
+    // Initialize package
     let mut scenario = test_scenario::begin(admin);
     acl::init_for_testing(scenario.ctx());
 
+    // Mint `Hero`
     scenario.next_tx(admin);
     {
         let admins = scenario.take_shared<Admins>();
@@ -29,6 +31,7 @@ fun test_mint() {
     assert!(transferred.size() == 1);
     let (hero_id, transferred_to) = transferred.pop();
     assert!(transferred_to == hero_owner);
+    // Check `Hero`'s fields
     {
         let hero = scenario.take_from_sender<Hero>();
         assert!(hero_id == object::id(&hero));
@@ -49,9 +52,11 @@ fun test_level_up() {
     let stamina = 10;
     let xp_stamina = 2;
 
+    // Initialize package
     let mut scenario = test_scenario::begin(admin);
     acl::init_for_testing(scenario.ctx());
 
+    // Mint `Hero` and `XPTome`
     scenario.next_tx(admin);
     {
         let admins = scenario.take_shared<Admins>();
@@ -63,6 +68,7 @@ fun test_level_up() {
     let mint_effects = scenario.next_tx(hero_owner);
     let transferred = mint_effects.transferred_to_account();
     assert!(transferred.size() == 2);
+    // Apply `XPTome` to `Hero` and check updated stats.
     {
         let mut hero = scenario.take_from_sender<Hero>();
         let xp_tome = scenario.take_from_sender<XPTome>();

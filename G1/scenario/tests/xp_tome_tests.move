@@ -12,17 +12,20 @@ fun test_new_xp_tome() {
     let hero_owner = @0x22222;
     let health = 20;
     let stamina = 5;
-    let mut scenario = test_scenario::begin(admin);
 
+    // Initialize package
+    let mut scenario = test_scenario::begin(admin);
     acl::init_for_testing(scenario.ctx());
 
-    let _begin_effects = scenario.next_tx(admin);
+    // Create new `XPTome`
+    scenario.next_tx(admin);
     {
         let admins = scenario.take_shared<Admins>();
         xp_tome::new(&admins, health, stamina, hero_owner, scenario.ctx());
         test_scenario::return_shared(admins);
     };
 
+    // Check `XPTome`'s field values
     let new_tome_effects = scenario.next_tx(hero_owner);
     assert!(new_tome_effects.transferred_to_account().size() == 1);
     {
