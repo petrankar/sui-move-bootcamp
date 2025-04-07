@@ -21,7 +21,7 @@ export class PublishSingleton {
             keypair = ADMIN_KEYPAIR;
         }
         if (!packagePath) {
-            packagePath = `${__dirname}/../fixed_supply`;
+            packagePath = `${__dirname}/../../fixed_supply`;
         }
         if (!PublishSingleton.instance) {
             const resp = await publishPackage(client, keypair, packagePath);
