@@ -1,4 +1,4 @@
-import { SuiClient, SuiObjectChangePublished, SuiTransactionBlockResponse, getFullnodeUrl } from '@mysten/sui/client';
+import { SuiClient, SuiObjectChangeCreated, SuiObjectChangePublished, SuiTransactionBlockResponse, getFullnodeUrl } from '@mysten/sui/client';
 import { Keypair } from '@mysten/sui/cryptography';
 import { ADMIN_KEYPAIR } from './consts';
 import { Transaction } from '@mysten/sui/transactions';
@@ -45,6 +45,20 @@ export class PublishSingleton {
             (chng): chng is SuiObjectChangePublished =>
                 chng.type === 'published'
         )?.packageId
+    }
+
+    public static freezer(): SuiObjectChangeCreated | undefined {
+        return this.publishResponse().objectChanges?.find(
+            (chng): chng is SuiObjectChangeCreated =>
+                chng.type === 'created' && chng.objectType === `${this.packageId()}::silver::Freezer`
+        );
+    }
+
+    public static treasuryCap(): SuiObjectChangeCreated | undefined {
+        return this.publishResponse().objectChanges?.find(
+            (chng): chng is SuiObjectChangeCreated =>
+                chng.type === 'created' && chng.objectType.endsWith(`2::coin::TresuryCap<${this.packageId()}::silver::SILVER>`)
+        );
     }
 }
 
