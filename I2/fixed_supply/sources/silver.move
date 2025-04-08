@@ -51,3 +51,27 @@ fun create_silver_currency(
     )
 }
 
+#[test_only]
+use sui::{coin::Coin, test_scenario};
+
+#[test]
+fun test_init() {
+    let publisher = @0x11111;
+
+    let mut scenario = test_scenario::begin(publisher);
+    init(SILVER(), scenario.ctx());
+    scenario.next_tx(publisher);
+    {
+        let freezer = scenario.take_immutable<Freezer>();
+        assert!(dof::exists_(&freezer.id, TreasuryCapKey()));
+        let cap: &TreasuryCap<SILVER> = dof::borrow(&freezer.id, TreasuryCapKey());
+        assert!(cap.total_supply() == TOTAL_SUPPLY);
+
+        let coin = scenario.take_from_sender<Coin<SILVER>>();
+        assert!(coin.value() == TOTAL_SUPPLY);
+        scenario.return_to_sender(coin);
+        test_scenario::return_immutable(freezer);
+    };
+    scenario.end();
+}
+
