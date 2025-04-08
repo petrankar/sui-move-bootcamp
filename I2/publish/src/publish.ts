@@ -57,7 +57,7 @@ export class PublishSingleton {
     public static treasuryCap(): SuiObjectChangeCreated | undefined {
         return this.publishResponse().objectChanges?.find(
             (chng): chng is SuiObjectChangeCreated =>
-                chng.type === 'created' && chng.objectType.endsWith(`2::coin::TresuryCap<${this.packageId()}::silver::SILVER>`)
+                chng.type === 'created' && chng.objectType === `0x2::coin::TreasuryCap<${this.packageId()}::silver::SILVER>`
         );
     }
 }
@@ -65,11 +65,11 @@ export class PublishSingleton {
 export async function publishPackage(client: SuiClient, signer: Keypair, packagePath: string): Promise<SuiTransactionBlockResponse> {
     const transaction = new Transaction();
 
-	const { modules, dependencies } = JSON.parse(
-		execSync(`sui move build --dump-bytecode-as-base64 --path ${packagePath}`, {
-			encoding: 'utf-8',
-		}),
-	);
+    const { modules, dependencies } = JSON.parse(
+        execSync(`sui move build --dump-bytecode-as-base64 --path ${packagePath}`, {
+            encoding: 'utf-8',
+        }),
+    );
 
     const upgradeCap = transaction.publish({
         modules,
