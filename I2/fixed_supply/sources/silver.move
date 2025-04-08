@@ -2,11 +2,10 @@
 module fixed_supply::silver;
 
 use sui::coin::{Self, TreasuryCap, CoinMetadata};
+use sui::dynamic_object_field as dof;
 use sui::url;
 
 public struct SILVER() has drop;
-
-const ETodo: u64 = 0;
 
 const DECIMALS: u8 = 9;
 const NAME: vector<u8> = b"Silver";
@@ -22,15 +21,19 @@ public struct Freezer has key {
 public struct TreasuryCapKey() has copy, drop, store;
 
 fun init(otw: SILVER, ctx: &mut TxContext) {
-    let (tcap, metadata) = create_silver_currency(otw, ctx);
+    let (mut tcap, metadata) = create_silver_currency(otw, ctx);
 
     transfer::public_freeze_object(metadata);
 
     // Mint the total supply, and transfer it to sender.
-    // Lock the treasury cap inside the freezer, so that it is unusable but
-    // still easily indexable.
-    // todo!<()>()
-    transfer::public_transfer(tcap, ctx.sender())
+    // Lock the treasury cap inside the freezer as DOF so that it is unusable
+    // but still easily indexable, and lastly freeze Freezer.
+    tcap.mint_and_transfer(TOTAL_SUPPLY, ctx.sender(), ctx);
+    let mut freezer = Freezer {
+        id: object::new(ctx),
+    };
+    dof::add(&mut freezer.id, TreasuryCapKey(), tcap);
+    transfer::freeze_object(freezer)
 }
 
 fun create_silver_currency(
@@ -48,6 +51,3 @@ fun create_silver_currency(
     )
 }
 
-public macro fun todo<$T>(): $T {
-    abort(ETodo)
-}

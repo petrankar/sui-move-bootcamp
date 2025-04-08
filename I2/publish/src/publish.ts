@@ -76,8 +76,11 @@ export async function publishPackage(client: SuiClient, signer: Keypair, package
         dependencies
     });
 
-    // TODO: Burn UpgradeCap
-    transaction.transferObjects([upgradeCap], signer.toSuiAddress());
+    // Burn upgradeCap
+    transaction.moveCall({
+        target: "0x2::package::make_immutable",
+        arguments: [upgradeCap]
+    });
 
     return await client.signAndExecuteTransaction({
         transaction,
