@@ -118,39 +118,40 @@ export async function placeAndListInKiosk({ client, signer, kiosk, swordId, pric
     return resp;
 }
 
-export async function purchase({ client, signer, fromKioskObjectId, swordId }: {
+export async function purchase({ client, signer, fromKioskObjectId, swordId, price }: {
     client: SuiClient;
     signer: Keypair;
     fromKioskObjectId: string;
     swordId: string;
-    price: number;
+    price?: number;
 }): Promise<SuiTransactionBlockResponse> {
-    const dfKey = bcs.struct(
-        '0x2::kiosk::Listing',
-        { id: bcs.Address, is_exclusive: bcs.bool() }
-    ).serialize({
-        id: swordId,
-        is_exclusive: false
-    }).toBytes();
+    // In case price is missing, find the kiosk Listing
+    if (!price) {
+        const dfKey = bcs.struct(
+            '0x2::kiosk::Listing',
+            { id: bcs.Address, is_exclusive: bcs.bool() }
+        ).serialize({
+            id: swordId,
+            is_exclusive: false
+        }).toBytes();
+        const dfId = deriveDynamicFieldID(fromKioskObjectId, '0x2::kiosk::Listing', dfKey);
 
-    // Find kiosk Listing
-    const dfId = deriveDynamicFieldID(fromKioskObjectId, '0x2::kiosk::Listing', dfKey);
-
-    const dfResp = await client.getObject({
-        id: dfId,
-        options: {
-            showContent: true
+        const dfResp = await client.getObject({
+            id: dfId,
+            options: {
+                showContent: true
+            }
+        });
+        if (!dfResp.data) {
+            throw new Error(`Could not find Listing for item ${swordId} under kiosk ${fromKioskObjectId}`);
         }
-    });
-    if (!dfResp.data) {
-        throw new Error(`Could not find Listing for item ${swordId} under kiosk ${fromKioskObjectId}`);
+        const content = dfResp.data.content as KioskListingParsedData;
+        price = parseInt(content.fields.value);
     }
-    const content = dfResp.data.content as KioskListingParsedData;
-    const price = content.fields.value;
 
     const transaction = new Transaction();
 
-    const payment = transaction.splitCoins(transaction.gas, [price]);
+    const payment = transaction.splitCoins(transaction.gas, [price.toString()]);
     const [sword, request] = transaction.moveCall({
         target: '0x2::kiosk::purchase',
         arguments: [
