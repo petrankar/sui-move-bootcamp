@@ -8,18 +8,18 @@ import { PublishSingleton } from './publish';
 type KioskListingFields = {
     id: {
         id: string;
-    },
+    };
     name: {
         type: "0x2::kiosk::Listing";
         fields: {
             id: string;
-            is_exclusive: boolean
+            is_exclusive: boolean;
         };
-    },
+    };
     value: string;
 };
 type KioskOwnerCapFields = {
-    for: string,
+    for: string;
     id: {
         id: string;
     };
@@ -27,8 +27,8 @@ type KioskOwnerCapFields = {
 type PersonalKioskCapFields = {
     id: {
         id: string;
-    },
-    cap: { type: '0x2::kiosk::KioskOwnerCap', fields: KioskOwnerCapFields };
+    };
+    cap: { type: '0x2::kiosk::KioskOwnerCap'; fields: KioskOwnerCapFields; };
 };
 type RoyaltyRuleConfigDFFields = {
     id: {
@@ -42,9 +42,9 @@ type RoyaltyRuleConfigDFFields = {
         type: `${string}::royalty_rule::Config`;
         fields: {
             amount_bp: number;
-            min_amount: string
-        }
-    }
+            min_amount: string;
+        };
+    };
 };
 type KioskListingParsedData = Extract<SuiParsedData, { dataType: 'moveObject' }> & { fields: KioskListingFields };
 type KioskOwnerCapParsedData = Extract<SuiParsedData, { dataType: 'moveObject' }> & { fields: KioskOwnerCapFields };
@@ -93,6 +93,7 @@ export async function createPersonalKiosk(client: SuiClient, signer: Keypair): P
         target: `0x2::kiosk::new`,
     });
 
+    // Task: Make `kiosk` personal.
     const [pcap] = transaction.moveCall({
         target: `${PublishSingleton.rulesPackageId()}::personal_kiosk::new`,
         arguments: [kiosk, cap]
@@ -242,6 +243,11 @@ export async function purchase({ client, signer, fromKioskObjectId, swordId }: {
         typeArguments: [`${PublishSingleton.packageId()}::sword::Sword`]
     });
 
+    // Task: Solve the rules regarding Sword purchases by
+    // 1. Putting the sword in your PersonalKiosk (personal_kiosk_rule)
+    // 2. Locking the sword in there (kiosk_lock_rule)
+    // 3. Paying royalties (royalty_rule)
+
     // Lock the sword in our personal kiosk
     const personalCapArg = transaction.object(buyerKiosk.capId);
     const [cap, potato] = transaction.moveCall({
@@ -328,10 +334,12 @@ export async function purchase({ client, signer, fromKioskObjectId, swordId }: {
 }
 
 export async function getKiosk(client: SuiClient, owner: string, isPersonal: boolean): Promise<KioskData | undefined> {
+    const StructType = isPersonal ? `${PublishSingleton.rulesPackageId()}::personal_kiosk::PersonalKioskCap` : "0x2::kiosk::KioskOwnerCap";
+
     let resp = await client.getOwnedObjects({
         owner,
         filter: {
-            StructType: isPersonal ? `${PublishSingleton.rulesPackageId()}::personal_kiosk::PersonalKioskCap` : "0x2::kiosk::KioskOwnerCap"
+            StructType
         },
         limit: 1,
         options: {
@@ -339,20 +347,15 @@ export async function getKiosk(client: SuiClient, owner: string, isPersonal: boo
         },
     });
     const data = resp.data.at(0)?.data;
-    if (!data) { return; }
-    if (isPersonal) {
-        const content = data.content as PersonalKioskCapParsedData;
-        return {
-            id: content.fields.cap.fields.for,
-            capId: data.objectId,
-            isPersonal: false
-        };
-    }
-    const content = data.content as KioskOwnerCapParsedData;
+    if (!data) { return undefined; }
+
+    const content = data.content as PersonalKioskCapParsedData | KioskOwnerCapParsedData;
     return {
-        id: content.fields.for,
+        id: isPersonal
+            ? (content as PersonalKioskCapParsedData).fields.cap.fields.for
+            : (content as KioskOwnerCapParsedData).fields.for,
         capId: data.objectId,
-        isPersonal: false
+        isPersonal
     };
 }
 

@@ -176,16 +176,16 @@ async function createPolicy({ client, signer, packageId, publisherChng, rulesPac
 }): Promise<SuiTransactionBlockResponse> {
     const transaction = new Transaction();
 
-    // Task: Set transfer policy with:
-    // 1. Personal kiosk rule
-    // 2. Royalty rule
-    // 3. Lock rule
     const [policy, cap] = transaction.moveCall({
         target: "0x2::transfer_policy::new",
         arguments: [transaction.objectRef(publisherChng)],
         typeArguments: [`${packageId}::sword::Sword`],
     });
 
+    // Task: Set transfer policy with:
+    // 1. Personal kiosk rule
+    // 2. Royalty rule
+    // 3. Lock rule
     transaction.moveCall({
         target: `${rulesPackageId}::personal_kiosk_rule::add`,
         arguments: [policy, cap],
