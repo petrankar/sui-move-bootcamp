@@ -1,5 +1,9 @@
 module admin_action::admin_cap;
 
+use sui::package;
+
+public struct ADMIN_CAP() has drop;
+
 public struct AdminCap has key, store {
     id: UID
 }
@@ -11,7 +15,7 @@ public struct Hero has key {
     stamina: u64,
 }
 
-fun init(otw: ACL, ctx: &mut TxContext) {
+fun init(otw: ADMIN_CAP, ctx: &mut TxContext) {
     package::claim_and_keep(otw,ctx);
     transfer::public_transfer(AdminCap {
         id: object::new(ctx),
