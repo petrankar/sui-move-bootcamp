@@ -99,7 +99,7 @@ fun increment(self: &mut Counter) {
 #[expected_failure(abort_code=ECouldNotMintSecond)]
 fun test_replay() {
     let mut ctx = tx_context::new_from_hint(@0x11111, 0, 0, 0, 0);
-    // TODO: Change with your signature
+    // Setup-Task 1: Change with your signature
     let sig = x"d42edd53c4b89ca770cea5135be326febdbc885b4d37136119c7b8bad2cef34582feef2a63065b3a40f00ab92e9b1a4cc85b3ffb8a71ae07602d47cad227290f";
     let mut counter = Counter { id: object::new(&mut ctx), value: 0 };
 

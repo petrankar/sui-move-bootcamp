@@ -36,6 +36,7 @@ fun init(otw: ADMIN_CAP, ctx: &mut TxContext) {
 /// This function should be called by holders of the AdminCap.
 /// Creates a new Hero with specified health and stamina attributes and transfers it to the recipient.
 public fun mint(
+    _: &AdminCap,
     health: u64,
     stamina: u64,
     recipient: address,
