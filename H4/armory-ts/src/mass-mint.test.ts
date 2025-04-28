@@ -22,9 +22,6 @@ export async function mintSwordsInArmory({ client, signer, nSwords, attack }: {
         ]
     });
 
-    // Set max gas-budget
-    txb.setGasBudget(50000000000);
-
     const resp = await client.signAndExecuteTransaction({
         transaction: txb,
         signer,
@@ -55,8 +52,9 @@ describe("Mint Swords", () => {
     it(`Mint ${swordsToMint} or more Swords`, async () => {
 
         // Task 1: Resolve max-new-objects per tx limit
-        const swordsPerMint = swordsToMint;
-        for (let i = 0; i < swordsToMint / swordsPerMint + 1; i++) {
+        // Task 3: Resolve max cache objects (max dynamic field creations)
+        const swordsPerMint = 500;
+        for (let i = 0; i < swordsToMint / swordsPerMint + (swordsToMint%swordsPerMint===0 ? 0 : 1); i++) {
             const swordResp = await mintSwordsInArmory({
                 client,
                 signer: admin,

@@ -1,22 +1,23 @@
 /// Module: armory
 module armory::armory;
 
+use sui::object_table::{Self, ObjectTable};
+
 public struct Sword has key, store {
     id: UID,
     attack: u64
 }
 
+// Task 2: Resolve max object size limit
 public struct Armory has key {
     id: UID,
-    swords: vector<Sword>,
-    sword_idx: u64,
+    swords: ObjectTable<ID, Sword>,
 }
 
 public fun new_armory(ctx: &mut TxContext): Armory {
     Armory {
         id: object::new(ctx),
-        swords: vector[],
-        sword_idx: 0
+        swords: object_table::new(ctx),
     }
 }
 
@@ -25,11 +26,11 @@ public fun share(self: Armory) {
 }
 
 public fun mint_swords(self: &mut Armory, n_swords: u64, attack: u64, ctx: &mut TxContext) {
-    n_swords.do!(|_i|
-        self.swords.push_back(Sword {
+    n_swords.do!(|_i| {
+        let sword = Sword {
             id: object::new(ctx),
             attack
-        })
-    );
-    self.sword_idx = self.sword_idx + n_swords;
+        };
+        self.swords.add(object::id(&sword), sword);
+    });
 }
