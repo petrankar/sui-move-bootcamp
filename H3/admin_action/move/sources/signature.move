@@ -105,7 +105,7 @@ fun test_replay() {
 
     // Since `ctx` is deterministically derived from a fixed hint, the generated
     // `id` will be identical across all runs.
-    std::debug::print(&object::id(&counter));
+    // std::debug::print(&object::id(&counter));
 
     assert!(mint(
         sig,
