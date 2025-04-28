@@ -7,9 +7,9 @@ dotenv.config();
 
 // Task 3: Change `WITH_COUNTER` to true to sign the message including the counter.
 const WITH_COUNTER = true;
-const MESSAGE = WITH_COUNTER ?
-    "Mint Hero for: 0x0000000000000000000000000000000000000000000000000000000000011111;health=10;stamina=10;counter_bcs=" :
-    "Mint Hero for: 0x0000000000000000000000000000000000000000000000000000000000011111;health=10;stamina=10";
+const MESSAGE =
+    "Mint Hero for: 0x0000000000000000000000000000000000000000000000000000000000011111;health=10;stamina=10" +
+    (WITH_COUNTER ? ";counter_bcs=" : "");
 
 let message = new TextEncoder().encode(MESSAGE);
 
