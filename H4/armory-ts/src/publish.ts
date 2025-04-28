@@ -1,4 +1,4 @@
-import { SuiClient, SuiObjectChangePublished, SuiTransactionBlockResponse, getFullnodeUrl } from '@mysten/sui/client';
+import { SuiClient, SuiObjectChangeCreated, SuiObjectChangePublished, SuiTransactionBlockResponse, getFullnodeUrl } from '@mysten/sui/client';
 import { Keypair } from '@mysten/sui/cryptography';
 import { ADMIN_KEYPAIR } from './consts';
 import { Transaction } from '@mysten/sui/transactions';
@@ -23,7 +23,7 @@ export class PublishSingleton {
             if (!packageId) {
                 throw new Error("Expected to find package published");
             }
-            const armoryResp = await createArmory(
+            const armoryResp = await createArmories(
                 client,
                 signer,
                 packageId,
@@ -56,8 +56,13 @@ export class PublishSingleton {
     }
     
     public static armoryId(): string {
-        return this.getInstance().armoryResp.effects!.created!.at(0)!.reference.objectId;
+        return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::armory::Armory`)!.objectId;
     }
+
+    public static armoryRegistryId(): string {
+        return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::registry::Armory`)!.objectId;
+    }
+
 }
 
 async function publishPackage(client: SuiClient, signer: Keypair, packagePath: string): Promise<SuiTransactionBlockResponse> {
@@ -91,7 +96,7 @@ async function publishPackage(client: SuiClient, signer: Keypair, packagePath: s
     return resp;
 }
 
-async function createArmory(client: SuiClient, signer: Keypair, packageId: string): Promise<SuiTransactionBlockResponse> {
+async function createArmories(client: SuiClient, signer: Keypair, packageId: string): Promise<SuiTransactionBlockResponse> {
     const txb = new Transaction();
 
     let armory = txb.moveCall({
@@ -100,6 +105,13 @@ async function createArmory(client: SuiClient, signer: Keypair, packageId: strin
     txb.moveCall({
         target: `${packageId}::armory::share`,
         arguments: [armory],
+    });
+    let armory_registry = txb.moveCall({
+        target: `${packageId}::registry::new_armory`,
+    });
+    txb.moveCall({
+        target: `${packageId}::registry::share`,
+        arguments: [armory_registry],
     });
     const resp = await client.signAndExecuteTransaction({
         transaction: txb,
@@ -123,3 +135,9 @@ function findPublishedPackage(resp: SuiTransactionBlockResponse): SuiObjectChang
     );
 }
 
+function findObjectChangeCreatedByType(resp: SuiTransactionBlockResponse, type: string): SuiObjectChangeCreated | undefined {
+    return resp.objectChanges?.find(
+        (chng): chng is SuiObjectChangeCreated =>
+            chng.type === 'created' && chng.objectType === type
+    );
+}
