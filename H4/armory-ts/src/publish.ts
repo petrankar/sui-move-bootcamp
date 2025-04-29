@@ -23,7 +23,7 @@ export class PublishSingleton {
             if (!packageId) {
                 throw new Error("Expected to find package published");
             }
-            const armoryResp = await createArmories(
+            const armoryResp = await createArmory(
                 client,
                 signer,
                 packageId,
@@ -58,11 +58,6 @@ export class PublishSingleton {
     public static armoryId(): string {
         return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::armory::Armory`)!.objectId;
     }
-
-    public static armoryToTableId(): string {
-        return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::armory_to_table::Armory`)!.objectId;
-    }
-
 }
 
 async function publishPackage(client: SuiClient, signer: Keypair, packagePath: string): Promise<SuiTransactionBlockResponse> {
@@ -96,23 +91,14 @@ async function publishPackage(client: SuiClient, signer: Keypair, packagePath: s
     return resp;
 }
 
-async function createArmories(client: SuiClient, signer: Keypair, packageId: string): Promise<SuiTransactionBlockResponse> {
+async function createArmory(client: SuiClient, signer: Keypair, packageId: string): Promise<SuiTransactionBlockResponse> {
     const txb = new Transaction();
 
     let armory = txb.moveCall({
         target: `${packageId}::armory::new_armory`,
     });
-    txb.moveCall({
-        target: `${packageId}::armory::share`,
-        arguments: [armory],
-    });
-    let armoryToTable = txb.moveCall({
-        target: `${packageId}::armory_to_table::new_armory`,
-    });
-    txb.moveCall({
-        target: `${packageId}::armory_to_table::share`,
-        arguments: [armoryToTable],
-    });
+    txb.transferObjects([armory], signer.toSuiAddress());
+
     const resp = await client.signAndExecuteTransaction({
         transaction: txb,
         signer,
