@@ -18,6 +18,7 @@ public struct Armory has key, store {
 }
 
 public fun new_armory(ctx: &mut TxContext): Armory {
+    // Task 2: Resolve max object size limit
     Armory {
         id: object::new(ctx),
         swords: table::new(ctx),
@@ -27,6 +28,7 @@ public fun new_armory(ctx: &mut TxContext): Armory {
 
 #[allow(lint(self_transfer))]
 public fun mint_swords(self: &mut Armory, n_swords: u64, attack: u64, ctx: &mut TxContext) {
+    // Task 2: Resolve max object size limit
     self.index.range_do!(self.index + n_swords, |i| {
         let sword = Sword {
             id: object::new(ctx),
@@ -45,6 +47,7 @@ public fun destroy_sword_entries(self: &mut Armory, start_index: u64, end_index:
 }
 
 public fun destroy(self: Armory) {
+    // Task 2: Resolve max object size limit
     let Armory {
         id,
         swords,

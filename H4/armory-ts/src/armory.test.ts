@@ -52,8 +52,9 @@ describe("Armory", () => {
     it(`Mint ${swordsToMint} or more Swords`, async () => {
 
         // Task 1: Resolve max-new-objects per tx limit
+        // Task 2: Resolve max-object-size for Armory
         // Task 3: Resolve max cache objects (max dynamic field creations)
-        const swordsPerMint = 500;
+        const swordsPerMint = 1000;
         for (let i = 0; i < swordsToMint / swordsPerMint + (swordsToMint % swordsPerMint === 0 ? 0 : 1); i++) {
             const swordResp = await mintSwordsInArmory({
                 client,
@@ -69,15 +70,8 @@ describe("Armory", () => {
         }
     }, 60000);
 
+    // Task 4: Claim storage rebate before dropping table.
     it(`Destroy Armory`, async () => {
-        let idx = 0;
-        const step = 450;
-        const armoryObj = await client.getObject({
-            id: PublishSingleton.armoryId(),
-            options: {
-                showContent: true
-            }
-        });
         type MoveObjectParsedData = Extract<SuiParsedData, { dataType: 'moveObject' }>;
         type ArmoryObjectParsedData = MoveObjectParsedData & {
             fields: {
@@ -91,6 +85,15 @@ describe("Armory", () => {
                 index: string;
             };
         };
+
+        let idx = 0;
+        const step = 1000;
+        const armoryObj = await client.getObject({
+            id: PublishSingleton.armoryId(),
+            options: {
+                showContent: true
+            }
+        });
         const content = armoryObj.data?.content as ArmoryObjectParsedData;
         const nSwords = parseInt(content.fields.swords.fields.size);
         while (idx < nSwords) {
@@ -122,6 +125,16 @@ describe("Armory", () => {
             idx = end_idx;
         }
 
+        const emptyArmory = await client.getObject({
+            id: PublishSingleton.armoryId(),
+            options: {
+                showContent: true
+            }
+        });
+        const newContent = emptyArmory.data?.content as ArmoryObjectParsedData;
+        const newSwords = parseInt(newContent.fields.swords.fields.size);
+        expect(newSwords).toBe(0);
+
         const txb = new Transaction();
         txb.moveCall({
             target: `${PublishSingleton.packageId()}::armory::destroy`,
@@ -130,15 +143,14 @@ describe("Armory", () => {
         const destroyResp = await client.signAndExecuteTransaction({
             transaction: txb,
             signer: admin,
-                options: {
-                    showEffects: true,
-                    showBalanceChanges: true,
-                    showObjectChanges: true,
-                }
-            });
-            if (destroyResp.effects?.status.status !== 'success') {
-                throw new Error(`Something went wrong removing sword entries:\n${JSON.stringify(destroyResp, null, 2)}`)
+            options: {
+                showEffects: true,
+                showBalanceChanges: true,
+                showObjectChanges: true,
             }
-
+        });
+        if (destroyResp.effects?.status.status !== 'success') {
+            throw new Error(`Something went wrong removing sword entries:\n${JSON.stringify(destroyResp, null, 2)}`)
+        }
     }, 60000);
 });
