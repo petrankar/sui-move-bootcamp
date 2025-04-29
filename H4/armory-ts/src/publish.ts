@@ -59,8 +59,8 @@ export class PublishSingleton {
         return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::armory::Armory`)!.objectId;
     }
 
-    public static armoryRegistryId(): string {
-        return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::registry::Armory`)!.objectId;
+    public static armoryToTableId(): string {
+        return findObjectChangeCreatedByType(this.getInstance().armoryResp, `${PublishSingleton.packageId()}::armory_to_table::Armory`)!.objectId;
     }
 
 }
@@ -106,12 +106,12 @@ async function createArmories(client: SuiClient, signer: Keypair, packageId: str
         target: `${packageId}::armory::share`,
         arguments: [armory],
     });
-    let armory_registry = txb.moveCall({
-        target: `${packageId}::registry::new_armory`,
+    let armoryToTable = txb.moveCall({
+        target: `${packageId}::armory_to_table::new_armory`,
     });
     txb.moveCall({
-        target: `${packageId}::registry::share`,
-        arguments: [armory_registry],
+        target: `${packageId}::armory_to_table::share`,
+        arguments: [armoryToTable],
     });
     const resp = await client.signAndExecuteTransaction({
         transaction: txb,

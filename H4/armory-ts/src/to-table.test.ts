@@ -14,9 +14,9 @@ export async function mintSwordsInArmory({ client, signer, nSwords, attack }: {
     const txb = new Transaction();
 
     txb.moveCall({
-        target: `${PublishSingleton.packageId()}::registry::mint_swords`,
+        target: `${PublishSingleton.packageId()}::armory_to_table::mint_swords`,
         arguments: [
-            txb.object(PublishSingleton.armoryRegistryId()),
+            txb.object(PublishSingleton.armoryToTableId()),
             txb.pure.u64(nSwords),
             txb.pure.u64(attack),
         ]
@@ -38,7 +38,7 @@ export async function mintSwordsInArmory({ client, signer, nSwords, attack }: {
     return resp;
 }
 
-describe("Armory into registry", () => {
+describe("Armory to table", () => {
     let client: SuiClient;
     const admin = ADMIN_KEYPAIR;
     const swordsToMint = 800;
@@ -52,7 +52,7 @@ describe("Armory into registry", () => {
             const swordResp = await mintSwordsInArmory({
                 client,
                 signer: admin,
-                armoryId: PublishSingleton.armoryRegistryId(),
+                armoryId: PublishSingleton.armoryToTableId(),
                 nSwords: swordsPerMint,
                 attack: 10,
             });
@@ -64,12 +64,12 @@ describe("Armory into registry", () => {
     }, 60000);
 
 
-    it(`Transform Armory to Registry`, async () => {
+    it(`Transform Armory to enumerated Table`, async () => {
         const txb = new Transaction();
 
         let table = txb.moveCall({
-            target: `${PublishSingleton.packageId()}::registry::into_registry`,
-            arguments: [txb.object(PublishSingleton.armoryRegistryId())]
+            target: `${PublishSingleton.packageId()}::armory_to_table::to_enumerated_table`,
+            arguments: [txb.object(PublishSingleton.armoryToTableId())]
         })
 
         txb.moveCall({
@@ -88,7 +88,7 @@ describe("Armory into registry", () => {
             }
         });
         if (resp.effects?.status.status !== 'success') {
-            throw new Error(`Something went transforming armory swords to registry:\n${JSON.stringify(resp, null, 2)}`)
+            throw new Error(`Something went transforming armory swords to table:\n${JSON.stringify(resp, null, 2)}`)
         }
 
 

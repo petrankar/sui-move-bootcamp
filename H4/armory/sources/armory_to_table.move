@@ -1,4 +1,4 @@
-module armory::registry;
+module armory::armory_to_table;
 
 use sui::table::{Self, Table};
 use sui::linked_table::{Self, LinkedTable};
@@ -34,7 +34,7 @@ public fun mint_swords(self: &mut Armory, n_swords: u64, attack: u64, ctx: &mut 
     });
 }
 
-public fun into_registry(self: &Armory, ctx: &mut TxContext): Table<u64, ID> {
+public fun to_enumerated_table(self: &Armory, ctx: &mut TxContext): Table<u64, ID> {
     let mut table = table::new<u64, ID>(ctx);
     let mut next = self.swords.front();
     let mut i = 0;
