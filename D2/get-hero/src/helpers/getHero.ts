@@ -9,8 +9,8 @@ export const getHero = async (id: string): Promise<SuiObjectResponse> => {
   return suiClient.getObject({
     id,
     options: {
-      showContent: true,
       showType: true,
-    },
+      showContent: true,
+    }
   });
 };

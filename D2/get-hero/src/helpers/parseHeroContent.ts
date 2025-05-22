@@ -20,13 +20,11 @@ interface HeroContent {
  */
 export const parseHeroContent = (objectResponse: SuiObjectResponse): Hero => {
   const content = objectResponse.data?.content as unknown as HeroContent;
-  if (!content) {
-    throw new Error("Empty hero content");
-  }
-  const hero: Hero = {
-    id: content.fields.id.id,
-    health: content.fields.health,
-    stamina: content.fields.stamina,
-  };
-  return hero;
+  const fields = content.fields;
+
+  return {
+    id: fields.id.id,
+    health: fields.health,
+    stamina: fields.stamina,
+  } as Hero;
 };
