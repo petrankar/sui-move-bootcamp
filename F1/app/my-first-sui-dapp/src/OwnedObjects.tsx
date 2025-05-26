@@ -7,6 +7,9 @@ export function OwnedObjects() {
     "getOwnedObjects",
     {
       owner: account?.address as string,
+      filter: {
+        StructType: `${import.meta.env.VITE_PACKAGE_ID}::hero::Hero`,
+      },
     },
     {
       enabled: !!account,
