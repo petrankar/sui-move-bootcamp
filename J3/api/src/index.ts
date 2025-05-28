@@ -5,11 +5,22 @@ import dotenv from "dotenv";
 import { SuiClient } from "@mysten/sui/client";
 import { getAdminSigner } from "./getAdminSigner";
 import axios, { AxiosError } from "axios";
+import {
+  register,
+  totalRequests,
+  successfulRequests,
+  invalidBodyRequests,
+  buildErrors,
+  signErrors,
+  createSponsoredErrors,
+  execSponsoredErrors,
+} from "./metrics";
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const MOCK_ERROR_RATE = 0.02;
 
 const suiClient = new SuiClient({
   url: process.env.SUI_NETWORK!,
@@ -28,18 +39,29 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 /**
+ * GET /metrics endpoint for getting the metrics collected by prometheus
+ */
+app.get("/metrics", async (_req, res) => {
+  res.set("Content-Type", register.contentType);
+  res.end(await register.metrics());
+});
+
+/**
  * POST /mint endpoint for minting a Hero NFT
  */
 app.post("/mint", async (req: Request, res: Response) => {
+  totalRequests.inc();
   // dummy validation of the recipient address
   const { address } = req.body;
   if (!address) {
+    invalidBodyRequests.inc();
     res.status(400).send({
       message: "Missing address",
     });
     return;
   }
   if (!isValidSuiAddress(address)) {
+    invalidBodyRequests.inc();
     res.status(400).send({
       message: "Invalid format of address",
     });
@@ -52,7 +74,7 @@ app.post("/mint", async (req: Request, res: Response) => {
     target: `${process.env.PACKAGE_ID}::hero::mint`,
     arguments: [
       // randomly throw errors to have real-world monitoring outputs
-      Math.random() < 0.5 ? tx.pure.u64(4) : tx.pure.string("Name"),
+      Math.random() < MOCK_ERROR_RATE ? tx.pure.u64(4) : tx.pure.string("Name"),
       tx.object(process.env.HEROES_REGISTRY_ID!),
     ],
   });
@@ -62,7 +84,7 @@ app.post("/mint", async (req: Request, res: Response) => {
   // return error if it fails
   let txBytes: Uint8Array | null = null;
   try {
-    if (Math.random() < 0.4) {
+    if (Math.random() < MOCK_ERROR_RATE) {
       throw Error("Mock error in building transaction");
     }
     txBytes = await tx.build({
@@ -70,6 +92,7 @@ app.post("/mint", async (req: Request, res: Response) => {
       onlyTransactionKind: true,
     });
   } catch (error) {
+    buildErrors.inc();
     res.status(500).send({
       message: `Error building transaction for ${address}`,
       error: (error as Error).message,
@@ -100,6 +123,7 @@ app.post("/mint", async (req: Request, res: Response) => {
     bytes = data.bytes;
     digest = data.digest;
   } catch (error) {
+    createSponsoredErrors.inc();
     const err = (error as AxiosError).response?.data;
     res.status(400).send({
       message: `Error creating sponsored transaction for ${address}`,
@@ -112,13 +136,14 @@ app.post("/mint", async (req: Request, res: Response) => {
   // return error if it fails
   let signature = "";
   try {
-    if (Math.random() < 0.4) {
+    if (Math.random() < MOCK_ERROR_RATE) {
       throw Error("Mock error in signing sponsored bytes");
     }
     const signer = getAdminSigner();
     let signResult = await signer.signTransaction(fromBase64(bytes));
     signature = signResult.signature;
   } catch (err) {
+    signErrors.inc();
     res.status(500).send({
       message: `Error signing transaction bytes for ${address}`,
       error: (err as Error).message,
@@ -141,12 +166,14 @@ app.post("/mint", async (req: Request, res: Response) => {
         },
       }
     );
+    successfulRequests.inc();
     res.status(200).send({
       message: "Hero minted successfully",
       digest: executeResponse.data.data.digest,
     });
     return;
   } catch (error) {
+    execSponsoredErrors.inc();
     const err = (error as AxiosError).response?.data;
     res.status(400).send({
       message: `Error executing sponsored transaction for ${address}`,
