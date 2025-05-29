@@ -22,9 +22,10 @@ export const failedRequests = new client.Counter({
   help: "Requests that failed due to any kind of internal error",
 });
 
-export const mintRequestDurationSeconds = new client.Summary({
-  name: "mint_request_duration_seconds",
-  help: "Duration of /mint requests in seconds",
+export const mintRequestDurationSeconds = new client.Histogram({
+  name: "mint_request_duration_in_sec",
+  help: "Duration of mint requests in seconds",
+  buckets: [0.5, 1, 2, 5],
 });
 
 // Register all metrics

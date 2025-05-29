@@ -27,6 +27,8 @@ And that we want to monitor some simple metrics (total requests, successful requ
 
 - UI: Sends a POST request to the /mint endpoint of the REST API, including the recipient's address in the HTTP body of the request
 - REST API: Builds, signs, sponsors with Enoki, and executes a PTB for minting the NFT for this recipient
+- Prometheus: Reads the metrics exposed by the API in the endpoint http://localhost:8000/metrics
+- Grafana: Visualises the Prometheus metrics
 
 ### Quickstart
 
@@ -54,13 +56,11 @@ Now let's start the Prometheus server as well, so that we can start monitoring t
   ./mint.sh
   ```
 
-- These are some interesting metrics you can calculate in http://localhost:9090/:
+#### 5. Create your Grafana Dashboard
 
-  | Query                                                                   | Description                             |
-  | ----------------------------------------------------------------------- | --------------------------------------- |
-  | rate(total_requests[1m])                                                | Total requests per minute               |
-  | rate(successful_requests[1m])                                           | Successful requests per minute          |
-  | rate(failed_requests[1m])                                               | Failed requests per minute              |
-  | (rate(successful_requests[1m]) / rate(total_requests[1m])) \* 100       | Success rate trend over the past minute |
-  | (rate(failed_requests[1m]) / rate(total_requests[1m])) \* 100           | Failure rate trend over the past minute |
-  | mint_request_duration_seconds_sum / mint_request_duration_seconds_count | Average duration of successful requests |
+- Visit http://localhost:3001, and you should see the Grafana UI there
+- Login with username `admin`, and password `admin`
+- Visit the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page
+- Choose `Prometheus` and add the `http://prometheus:9090` URL where Prometheus is running
+- Go back to the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page, and choose `Build a dashboard` for the Prometheus data source
+-
