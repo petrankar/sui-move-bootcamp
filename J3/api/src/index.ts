@@ -17,6 +17,7 @@ app.use(express.json());
 
 // GET / endpoint for checking if the api is running
 app.get("/", (req: Request, res: Response) => {
+  logger.info("Received a request for the root endpoint");
   res.status(200).send("Hello, world!");
 });
 

@@ -32,21 +32,30 @@ And that we want to monitor some simple metrics (total requests, successful requ
 
 ### Quickstart
 
-#### 1. Publish the smart contracts and start the API
+#### 1. Start the API
 
-- The exact steps for that can be found in the [api/README.md](./api/README.md) file.
+- Create a `.env` file in the [/api](./api/) directory, following the scaffold of the [.env.example](./api/.env.example)
+- The content of the `.env` will be provided by the instructors when solving the exercise
+- Run the following commands to get the local API running:
+
+```
+cd /api
+npm i
+npm run dev
+```
+
 - After following them, try visiting http://localhost:8000, and you should get a "Hello, world!" response
 
-#### 3. Setup the Prometheus Metrics Server
+#### 2. Setup the Prometheus Metrics Server
 
 Now let's start the Prometheus server as well, so that we can start monitoring the API:
 
-- Change your current directory into the root [J3](../J3/) of the current exercies
+- Change your current directory into the root [J3](../J3/) of the current exercise
 - Run `docker-compose up`
 - If you visit `http://localhost:9090/` in a web browser, you will see a simple dashboard provided by Prometheus
 - Please notice that the exposed metrics have been defined in the [metrics.ts](./api/src/metrics.ts) file of the API.
 
-#### 4. Simulate a scenario and observe the metrics
+#### 3. Simulate a scenario and observe the metrics
 
 - Run the [mint.sh](./mint.sh) script to simulate 50 almost concurrent users requesting their NFT:
 
@@ -56,16 +65,18 @@ Now let's start the Prometheus server as well, so that we can start monitoring t
   ./mint.sh
   ```
 
-#### 5. Create your Grafana Dashboard
+#### 4. Create your Grafana Dashboard [you can just watch the instructor here]
 
 - Visit http://localhost:3001, and you should see the Grafana UI there
 - Login with username `admin`, and password `admin`
-- Visit the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page
-- Choose `Prometheus` and add the `http://prometheus:9090` URL where Prometheus is running
-- Go back to the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page, and choose `Build a dashboard` for the Prometheus data source
-- You can also import the [Grafana Dashboard json file](./Simple%20Mint%20API%20Monitoring-1748520792884.json) of the [J3](./) directory to use a pre-built dashboard
+- Add Prometheus as a Data Source:
+  - Visit the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page
+  - Choose `Prometheus` and add the `http://prometheus:9090` URL where Prometheus is running
+- Import the pre-built dashboard:
+  - Visit the [Import Dashboard page](http://localhost:3001/dashboard/import)
+  - Import the [Grafana Dashboard json file](./Simple%20Mint%20API%20Monitoring-1748520792884.json) of the [J3](./) directory to use a pre-built dashboard
 
-#### 6. Add Alerts
+#### 5. Add Alerts [you can just watch the instructor here]
 
 - Each panel of the Grafana dashboard has an `Add Alert Rule` that allows you to define conditions for receiving alerts
 - For example, you can choose to receive an alert whenever the Average Response Duration is more than 5 seconds, or when the error rate is above 10% consistently for more than 1 minute.
