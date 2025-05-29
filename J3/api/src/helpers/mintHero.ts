@@ -12,7 +12,7 @@ dotenv.config();
 const suiClient = new SuiClient({
   url: process.env.SUI_NETWORK!,
 });
-const MOCK_ERROR_RATE = 0.2;
+const MOCK_ERROR_RATE = 0.05;
 
 /**
  * Signs, Sponsors, and Executes a transaction to mint a Hero NFT.

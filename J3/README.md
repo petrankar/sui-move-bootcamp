@@ -64,3 +64,8 @@ Now let's start the Prometheus server as well, so that we can start monitoring t
 - Choose `Prometheus` and add the `http://prometheus:9090` URL where Prometheus is running
 - Go back to the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page, and choose `Build a dashboard` for the Prometheus data source
 - You can also import the [Grafana Dashboard json file](./Simple%20Mint%20API%20Monitoring-1748520792884.json) of the [J3](./) directory to use a pre-built dashboard
+
+#### 6. Add Alerts
+
+- Each panel of the Grafana dashboard has an `Add Alert Rule` that allows you to define conditions for receiving alerts
+- For example, you can choose to receive an alert whenever the Average Response Duration is more than 5 seconds, or when the error rate is above 10% consistently for more than 1 minute.
