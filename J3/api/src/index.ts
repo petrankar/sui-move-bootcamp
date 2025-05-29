@@ -8,6 +8,8 @@ import {
   totalRequests,
   mintRequestDurationSeconds,
 } from "./metrics";
+import { logger } from "./logger";
+import { formatAddress } from "@mysten/sui/utils";
 
 dotenv.config();
 const app = express();
@@ -26,7 +28,7 @@ app.get("/metrics", async (_req, res) => {
 
 // POST /mint endpoint for minting a Hero NFT
 app.post("/mint", async (req: Request, res: Response) => {
-  console.info(`Received a request for: ${req.body.address}`);
+  logger.info(`Received a request for: ${formatAddress(req.body.address)}`);
   totalRequests.inc();
   const startTime = process.hrtime();
 
@@ -42,9 +44,8 @@ app.post("/mint", async (req: Request, res: Response) => {
     });
   } catch (err) {
     failedRequests.inc();
-    console.error(
-      `Error for address ${req.body.address}:`,
-      (err as Error).message
+    logger.error(
+      `Error for address ${req.body.address}: ${(err as Error).message}`
     );
     res.status(500).send({
       message: "Error minting Hero NFT",
@@ -55,5 +56,5 @@ app.post("/mint", async (req: Request, res: Response) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(process.env.PORT, () => {
-  console.info(`Server listening on http://localhost:${PORT}`);
+  logger.info(`Server listening on http://localhost:${PORT}`);
 });

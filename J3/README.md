@@ -63,4 +63,4 @@ Now let's start the Prometheus server as well, so that we can start monitoring t
 - Visit the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page
 - Choose `Prometheus` and add the `http://prometheus:9090` URL where Prometheus is running
 - Go back to the [Connections -> Data Sources](http://localhost:3001/connections/datasources/) page, and choose `Build a dashboard` for the Prometheus data source
--
+- You can also import the [Grafana Dashboard json file](./Simple%20Mint%20API%20Monitoring-1748520792884.json) of the [J3](./) directory to use a pre-built dashboard
