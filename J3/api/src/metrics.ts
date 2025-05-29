@@ -17,36 +17,18 @@ export const successfulRequests = new client.Counter({
   help: "Number of successful mints",
 });
 
-export const invalidBodyRequests = new client.Counter({
-  name: "invalid_body_requests",
-  help: "Requests with invalid or missing body",
+export const failedRequests = new client.Counter({
+  name: "failed_requests",
+  help: "Requests that failed due to any kind of internal error",
 });
 
-export const buildErrors = new client.Counter({
-  name: "build_errors",
-  help: "Errors during transaction building",
-});
-
-export const createSponsoredErrors = new client.Counter({
-  name: "create_sponsored_errors",
-  help: "Errors during Enoki sponsorship creation",
-});
-
-export const signErrors = new client.Counter({
-  name: "sign_errors",
-  help: "Errors during signing sponsored transaction",
-});
-
-export const execSponsoredErrors = new client.Counter({
-  name: "execute_sponsored_errors",
-  help: "Errors during execution of sponsored transaction",
+export const mintRequestDurationSeconds = new client.Summary({
+  name: "mint_request_duration_seconds",
+  help: "Duration of /mint requests in seconds",
 });
 
 // Register all metrics
 register.registerMetric(totalRequests);
 register.registerMetric(successfulRequests);
-register.registerMetric(invalidBodyRequests);
-register.registerMetric(buildErrors);
-register.registerMetric(createSponsoredErrors);
-register.registerMetric(signErrors);
-register.registerMetric(execSponsoredErrors);
+register.registerMetric(failedRequests);
+register.registerMetric(mintRequestDurationSeconds);
