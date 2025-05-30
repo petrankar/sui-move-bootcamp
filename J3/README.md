@@ -1,6 +1,8 @@
 ## Sui & Move Bootcamp <> Using Prometheus and Grafana for Monitoring (+ a real-world airdrop scenario as a bonus gift)
 
 For this exercise we will show how we can monitor an NFT-airdrop REST API with Prometheus and Grafana.
+The first part is a theoretical introduction in the concepts of Monitoring Logging and Alerting, which can be found here:
+https://docs.google.com/presentation/d/11QeTQARcDpqHDq76dH4fRx9j-6j7KbSUq5DDAfxkeX0/edit?usp=sharing
 
 ### Project Structure
 
